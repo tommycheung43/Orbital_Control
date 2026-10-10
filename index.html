@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Orbital Control — Station Operations</title>
+  <link rel="icon" href="/favicon.png" />
+  <link rel="stylesheet" href="/operations.css" />
+</head>
+<body>
+  <a class="skip-link" href="#station-view">Skip to station</a>
+  <header class="topbar">
+    <div><span class="eyebrow">ORBITAL CONTROL</span><h1>Station operations</h1></div>
+    <nav aria-label="Workspace">
+      <button id="station-mode" aria-pressed="true">Station</button>
+      <button id="crew-mode" class="crew-entry" aria-pressed="false">Crew & tasks</button>
+      <button id="investigation-mode" aria-pressed="false" hidden>Investigate</button>
+      <details id="advanced-menu" class="advanced-menu"><summary>More tools</summary><div class="advanced-links">
+        <button id="control-mode" aria-label="System control" aria-pressed="false">System control</button>
+        <button id="review-mode" aria-label="Shift review" aria-pressed="false">Shift review</button>
+        <button id="teacher-mode" class="teacher-entry" aria-label="Teacher tools" aria-pressed="false">Teacher tools</button>
+      </div></details>
+    </nav>
+    <span id="run-clock" aria-label="Run time">Initializing station…</span>
+  </header>
+  <main>
+    <section class="controls" aria-label="Simulation controls">
+      <button id="pause-time" hidden>Resume time</button>
+      <span id="time-state">Running</span>
+      <details id="run-settings" class="run-settings"><summary>Run settings</summary><div>
+        <label>Speed <select id="time-speed"><option value="0.25">0.25×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label>
+        <label class="seed-control">Run seed <input id="run-seed" type="number" value="42" min="0" max="4294967295" step="1" /></label>
+        <button id="new-run">Start new run</button>
+      </div></details>
+    </section>
+    <section id="mission-guide" class="mission-guide" aria-labelledby="mission-title">
+      <div class="mission-copy"><span class="eyebrow">YOUR NEXT STEP</span><h2 id="mission-title"></h2><p id="mission-detail"></p>
+        <details class="route-details"><summary>View full shift route</summary><div id="mission-rail" class="mission-rail" aria-label="Shift progress"></div></details>
+      </div>
+      <button id="mission-continue" class="primary">Continue</button>
+    </section>
+    <section id="control-view" hidden aria-labelledby="control-title">
+      <div class="panel-heading"><div><span class="eyebrow">STUDENT WORKSPACE</span><h2 id="control-title">System control</h2></div><button id="control-investigate">Open SQL</button></div>
+      <p class="mode-note">Controls show affected systems. Use SQL to discover the actual result.</p>
+      <div class="control-layout">
+        <aside class="panel"><h3>Target module</h3><div id="control-module-list" class="module-picker"></div></aside>
+        <section class="panel control-console">
+          <div id="control-target-summary"></div>
+          <div class="control-grid">
+            <form id="power-control" class="control-card">
+              <h3>Power allocation</h3><div class="impact-list"><span>Power</span><span>Oxygen</span><span>Production</span></div>
+              <label>Allocation (MW)<input id="power-value" type="number" min="0" max="100" step="1" required /></label>
+              <button type="submit">Apply power</button>
+            </form>
+            <form id="oxygen-control" class="control-card">
+              <h3>Oxygen regulation</h3><div class="impact-list"><span>Oxygen</span><span>Power</span><span>Safety</span></div>
+              <label>Target (%)<input id="oxygen-value" type="number" min="40" max="100" step="1" required /></label>
+              <button type="submit">Apply oxygen target</button>
+            </form>
+            <form id="mode-control" class="control-card">
+              <h3>Module mode</h3><div class="impact-list"><span>Power</span><span>Crew</span><span>Operations</span></div>
+              <label>Mode<select id="module-mode"><option value="operational">Operational</option><option value="suspended">Suspended</option></select></label>
+              <button type="submit">Apply mode</button>
+            </form>
+            <form id="crew-control" class="control-card">
+              <h3>Crew assignment</h3><div class="impact-list"><span>Crew</span><span>Maintenance</span><span>Safety</span></div>
+              <label>Crew member<select id="crew-value"></select></label>
+              <button type="submit">Assign crew</button>
+            </form>
+          </div>
+        </section>
+      </div>
+    </section>
+    <p id="status-message" role="status" aria-live="polite">Loading local station systems.</p>
+    <section id="station-view" tabindex="-1">
+      <div class="station-layout">
+        <section class="panel incident-panel" aria-labelledby="incident-title">
+          <span class="eyebrow">CURRENT SITUATION</span><h2 id="incident-title">Station briefing</h2>
+          <p id="incident-brief"></p><p id="incident-deadline"></p>
+          <div id="first-action-feedback" class="consequence" role="status" hidden></div>
+          <button id="open-investigation" class="primary">Investigate</button>
+          <button id="open-crew" class="crew-entry">Manage crew & tasks</button>
+          <h3 id="decision-heading">Choose a response</h3><div id="decision-list"></div>
+          <details id="recovery-panel"><summary>Repair & recovery</summary><div id="operation-list"></div></details>
+        </section>
+        <aside class="station-secondary">
+          <section id="station-pulse" class="station-pulse" aria-label="Current station status" hidden></section>
+          <details id="station-overview" class="panel overview-panel"><summary>Station overview</summary>
+            <div id="metrics" class="metrics" aria-label="Station telemetry"></div>
+            <p id="crew-readiness"></p>
+            <div id="game-container" aria-hidden="true"></div>
+            <div id="module-summary" class="module-summary"></div>
+          </details>
+          <details class="panel history-panel"><summary>Recent activity</summary><ol id="recent-events" class="timeline"></ol></details>
+        </aside>
+      </div>
+    </section>
+    <section id="crew-view" class="crew-workspace" hidden aria-labelledby="crew-title">
+      <div class="panel-heading"><div><span class="eyebrow">PERSONNEL / WORK QUEUE</span><h2 id="crew-title" tabindex="-1">Crew & tasks</h2></div><button id="crew-return">Return to station</button></div>
+      <p class="mode-note">Review the roster and routine work at any time. Choose who handles specialist emergencies.</p>
+      <div id="crew-summary" class="crew-summary" aria-label="Crew readiness"></div>
+      <div class="crew-layout">
+        <section class="panel task-board" aria-labelledby="task-board-title"><h3 id="task-board-title">Task queue</h3><div id="task-list"></div></section>
+        <section class="panel crew-board" aria-labelledby="assignment-title">
+          <div id="selected-task-detail"></div>
+          <h3 id="assignment-title">Eligible crew</h3><p id="candidate-summary"></p><div id="candidate-list" class="candidate-list"></div>
+          <button id="crew-investigate" type="button">Investigate crew history with SQL</button>
+          <details class="roster-details"><summary>Search full crew roster</summary>
+            <label for="crew-search">Search name or code</label><input id="crew-search" type="search" autocomplete="off" />
+            <div id="crew-roster" class="crew-roster"></div>
+          </details>
+        </section>
+      </div>
+    </section>
+    <section id="investigation-view" hidden aria-labelledby="investigation-title">
+      <div class="panel-heading"><div><span class="eyebrow">SQL INVESTIGATION</span><h2 id="investigation-title">Investigation</h2></div><button id="return-decision" class="primary">Return to decisions</button></div>
+      <p class="mode-note">Time paused. Use SQL to understand consequences, then return when ready.</p>
+      <div class="investigation-layout">
+        <aside class="panel sql-sidebar">
+          <span class="eyebrow">SQL TOOLKIT</span><h3 id="sql-stage-title">Level 1 · Filter</h3>
+          <div id="sql-level-track" class="level-track" aria-label="SQL learning progress"></div>
+          <p id="sql-stage-goal"></p><div id="sql-functions" class="function-list"></div>
+          <button id="sql-stage-example" type="button">Load level example</button>
+          <details><summary>Quick views</summary>
+            <p><code>current_modules</code> — current power, oxygen and module details.</p>
+            <p><code>current_backups</code> — current battery details.</p>
+            <p><code>crew_roster</code> — crew, skills and location.</p>
+            <p><code>tasks</code> — current work queue and requirements.</p>
+            <p><code>crew_task_history</code> — past assignments and progress.</p>
+            <p><code>repair_history</code> — earlier repairs, work time and fatigue.</p>
+            <p><code>maintenance_history</code> — maintenance with module names.</p>
+          </details>
+          <details><summary>Crew investigation examples</summary>
+            <button type="button" class="sql-preset" data-min-level="1" data-sql="SELECT name, role, engineering_skill, fatigue, status FROM crew_roster WHERE certification = 'REACTOR';">Find Reactor crew · WHERE</button>
+            <button type="button" class="sql-preset" data-min-level="1" data-sql="SELECT name, outcome, work_ticks, fatigue_after FROM repair_history WHERE task_type = 'REACTOR_MAINTENANCE';">Review earlier repairs · WHERE</button>
+            <button type="button" class="sql-preset" data-min-level="2" data-sql="SELECT name, COUNT(*) AS jobs, AVG(work_ticks) AS avg_ticks FROM repair_history WHERE task_type = 'REACTOR_MAINTENANCE' GROUP BY name ORDER BY avg_ticks;">Compare repair time · GROUP BY</button>
+            <button type="button" class="sql-preset" data-min-level="3" data-sql="SELECT c.name, h.outcome, h.work_ticks, h.fatigue_after FROM crew_service_history h JOIN crew c ON c.crew_id = h.crew_id WHERE h.task_type = 'REACTOR_MAINTENANCE';">Join crew to service records · JOIN</button>
+            <button type="button" class="sql-preset" data-min-level="3" data-sql="SELECT c.name, h.event, t.title, h.tick FROM crew_task_history h JOIN crew c ON c.crew_id = h.crew_id JOIN tasks t ON t.task_id = h.task_id WHERE t.type = 'REACTOR_REPAIR';">Review this run · JOIN</button>
+          </details>
+          <details id="write-guide"><summary>INSERT / UPDATE / DELETE</summary>
+            <p>Level 4 only. These commands can change <code>work_orders</code>. Telemetry remains protected.</p>
+            <p>Columns: work_order_id, module_id, task_type, priority (1–5), status (OPEN, ACTIVE, RESOLVED), note.</p>
+            <button type="button" class="sql-preset" data-sql="INSERT INTO work_orders (work_order_id, module_id, task_type, priority, status, note) VALUES (3, 1, 'COOLANT', 3, 'OPEN', 'Inspect coolant loop');">INSERT example</button>
+            <button type="button" class="sql-preset" data-sql="UPDATE work_orders SET priority = 4, status = 'ACTIVE' WHERE work_order_id = 1;">UPDATE example</button>
+            <button type="button" class="sql-preset" data-sql="DELETE FROM work_orders WHERE status = 'RESOLVED';">DELETE example</button>
+          </details>
+          <details id="evidence-section" hidden><summary>Optional SQL challenges</summary><p>Practice with guided evidence questions. Station controls work without them.</p><div id="evidence-questions"></div></details>
+          <details><summary>All tables & relationships</summary><div id="schema-list"></div></details>
+        </aside>
+        <section class="panel query-panel">
+          <label for="sql-input"><strong>SQL query · Ctrl + Enter</strong></label>
+          <textarea id="sql-input" spellcheck="false">SELECT module_name, mw, oxygen_level FROM current_modules WHERE kind = 'habitat';</textarea>
+          <div class="query-controls"><button id="execute-sql" class="primary">Run query</button><button id="pin-evidence" disabled>Pin evidence</button><span id="snapshot-label"></span></div>
+          <p id="query-feedback" role="status"></p>
+          <div id="query-results" class="table-scroll" tabindex="0" aria-label="Query results"></div>
+          <details><summary>Query history</summary><div id="query-history"></div></details>
+          <details><summary>Evidence rules</summary>
+            <p>Use WHERE to filter records, JOIN to relate keys, and GROUP BY to summarize. Only <code>work_orders</code> accepts changes after level 4.</p>
+            <p>For evidence, include the requested column names and all matching records. Extra columns and different row order are accepted. Duplicate, missing, truncated or stale records do not pass. Aliases for required columns must retain the names shown in each question.</p>
+            <p>Each question has an optional guided query. Edit it or write an equivalent query yourself; hints are recorded separately from operational outcomes.</p>
+            <code>SELECT m.module_name, SUM(p.mw) AS total_mw FROM modules m JOIN power_usage p ON p.module_id = m.module_id WHERE p.recorded_at = (SELECT MAX(recorded_at) FROM power_usage) GROUP BY m.module_name;</code>
+          </details>
+        </section>
+      </div>
+    </section>
+    <section id="review-view" hidden aria-labelledby="review-title" class="panel">
+      <span class="eyebrow">SHIFT DEBRIEF</span><h2 id="review-title">Shift review</h2><p id="review-summary"></p>
+      <div id="debrief-cards" class="debrief-grid"></div>
+      <section class="next-practice"><strong>Next practice</strong><p id="debrief-recommendation"></p></section>
+      <details><summary>About this review</summary><p>Query practice and operational outcomes are recorded separately. Data stays on this device.</p></details>
+      <button id="export-review">Export run record</button><ol id="review-events" class="timeline"></ol>
+    </section>
+    <section id="teacher-view" hidden aria-labelledby="teacher-title">
+      <div class="panel-heading"><div><span class="eyebrow">TEACHER WORKSPACE</span><h2 id="teacher-title">Scenario builder</h2></div><div><button id="teacher-import">Import</button><button id="teacher-export">Export</button></div></div>
+      <p class="mode-note">Local authoring workspace. It does not provide account security or online publishing.</p>
+      <form id="scenario-form">
+        <section class="panel teacher-settings"><h3>Scenario</h3>
+          <label>Title<input id="scenario-title" required /></label>
+          <label>Alert tick<input id="scenario-trigger" type="number" min="1" max="60" required /></label>
+          <label>Deadline ticks<input id="scenario-deadline" type="number" min="6" max="180" required /></label>
+          <label>Run ticks<input id="scenario-run" type="number" min="30" max="600" required /></label>
+          <label>History samples per module<input id="scenario-history" type="number" min="100" max="2000" required /></label>
+        </section>
+        <section class="panel"><div class="panel-heading"><h3>Modules</h3><button id="add-module" type="button">Add module</button></div><div id="teacher-modules"></div></section>
+        <div id="teacher-errors" role="alert"></div>
+        <button type="submit" class="primary">Save and start scenario</button>
+        <button id="reset-scenario" type="button">Restore default</button>
+      </form>
+      <input id="scenario-file" type="file" accept="application/json" hidden />
+    </section>
+  </main>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
