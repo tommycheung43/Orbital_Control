@@ -77,6 +77,17 @@ npm run build-nolog
 
 The no-log scripts avoid the upstream template's optional logging script. No network service is needed during gameplay; SQLite/WASM and all assets are bundled locally.
 
+If the Device Guard block the python.exe:
+
+## Run
+
+```sh
+ren .venv .venv.backup
+py -3 -m venv .venv
+.venv\Scripts\python.exe --version
+uv sync --no-python-downloads
+```
+
 ## Try the game loop
 
 New runs begin paused with a Habitat power shortfall. The first button restores power; the result appears immediately. Resume time for the Reactor alert, or investigate the first change with SQL if you want more detail. The main station view then shows a compact power, oxygen, crew, spares and work-queue summary.
